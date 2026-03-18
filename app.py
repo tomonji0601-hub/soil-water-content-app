@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="土の含水比計算",
-    page_icon="🧪",
+    page_icon="icon.png",
     layout="centered"
 )
 

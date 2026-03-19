@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 # =====================
 st.set_page_config(
     page_title="含ちゃん",
-    page_icon="🧪",
+    page_icon="icon.png",
     layout="centered"
 )
 

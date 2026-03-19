@@ -1,13 +1,17 @@
-import streamlit as st
-import pandas as pd
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import pandas as pd
+import streamlit as st
+
 # =====================
-# ページ設定
+# 設定
 # =====================
+CSV_FILE = "water_content_history.csv"
+
 st.set_page_config(
-    page_title="含ちゃん",
+    page_title="土の含水比計算",
     page_icon="🧪",
     layout="centered"
 )
@@ -45,14 +49,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================
-# セッション初期化
-# =====================
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# =====================
 # 関数
 # =====================
+def get_now_jst():
+    return datetime.now(ZoneInfo("Asia/Tokyo"))
+
 def calc_water_content(ma: float, mb: float, mc: float):
     dry_mass = mb - mc
     water_mass = ma - mb
@@ -65,17 +66,38 @@ def calc_water_content(ma: float, mb: float, mc: float):
     w = 100 * water_mass / dry_mass
     return w, water_mass, dry_mass
 
-def get_now_jst():
-    return datetime.now(ZoneInfo("Asia/Tokyo"))
+def load_history():
+    if os.path.exists(CSV_FILE):
+        try:
+            return pd.read_csv(CSV_FILE)
+        except Exception:
+            return pd.DataFrame(columns=[
+                "測定日時", "試料名", "ma [g]", "mb [g]", "mc [g]",
+                "水の質量 ma-mb [g]", "乾燥試料の質量 mb-mc [g]", "含水比 w [%]"
+            ])
+    else:
+        return pd.DataFrame(columns=[
+            "測定日時", "試料名", "ma [g]", "mb [g]", "mc [g]",
+            "水の質量 ma-mb [g]", "乾燥試料の質量 mb-mc [g]", "含水比 w [%]"
+        ])
+
+def save_history(df: pd.DataFrame):
+    df.to_csv(CSV_FILE, index=False, encoding="utf-8-sig")
+
+# =====================
+# セッション初期化
+# =====================
+if "history_df" not in st.session_state:
+    st.session_state.history_df = load_history()
 
 # =====================
 # タイトル
 # =====================
-st.markdown("<h1 style='text-align: center;'>🌱 含ちゃん</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>試料名・測定日時付きで履歴保存できます</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🌱 土の含水比計算</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>試料名・測定日時付きで履歴保存</p>", unsafe_allow_html=True)
 
 # =====================
-# 入力カード
+# 入力
 # =====================
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("入力")
@@ -95,22 +117,19 @@ st.markdown(
     f"<p class='small-note'>測定日時（自動取得）: {now_jst.strftime('%Y-%m-%d %H:%M:%S')}</p>",
     unsafe_allow_html=True
 )
-
 st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================
 # ボタン
 # =====================
 col_btn1, col_btn2 = st.columns(2)
-
 with col_btn1:
-    calc_clicked = st.button("計算して履歴に追加", use_container_width=True)
-
+    calc_clicked = st.button("計算して保存", use_container_width=True)
 with col_btn2:
     clear_clicked = st.button("履歴を削除", use_container_width=True)
 
 # =====================
-# 計算処理
+# 保存処理
 # =====================
 if calc_clicked:
     try:
@@ -120,7 +139,7 @@ if calc_clicked:
         w, water_mass, dry_mass = calc_water_content(ma, mb, mc)
         timestamp = get_now_jst().strftime("%Y-%m-%d %H:%M:%S")
 
-        record = {
+        record = pd.DataFrame([{
             "測定日時": timestamp,
             "試料名": sample_name.strip(),
             "ma [g]": round(ma, 3),
@@ -129,9 +148,13 @@ if calc_clicked:
             "水の質量 ma-mb [g]": round(water_mass, 3),
             "乾燥試料の質量 mb-mc [g]": round(dry_mass, 3),
             "含水比 w [%]": round(w, 2)
-        }
+        }])
 
-        st.session_state.history.append(record)
+        st.session_state.history_df = pd.concat(
+            [st.session_state.history_df, record],
+            ignore_index=True
+        )
+        save_history(st.session_state.history_df)
 
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown(f"<div class='result'>w = {w:.2f} %</div>", unsafe_allow_html=True)
@@ -142,31 +165,35 @@ if calc_clicked:
             st.write(f"乾燥試料の質量 = mb - mc = {mb:.3f} - {mc:.3f} = {dry_mass:.3f} g")
             st.write(f"w = 100 × ({water_mass:.3f}) / ({dry_mass:.3f}) = {w:.2f} %")
 
-        st.success("履歴に追加しました。")
+        st.success("CSVに保存しました。")
 
     except ValueError as e:
         st.error(str(e))
-    except Exception:
-        st.error("入力値を確認してください。")
+    except Exception as e:
+        st.error(f"保存中にエラーが発生しました: {e}")
 
 # =====================
 # 履歴削除
 # =====================
 if clear_clicked:
-    st.session_state.history = []
-    st.warning("履歴を削除しました。")
+    st.session_state.history_df = st.session_state.history_df.iloc[0:0]
+    save_history(st.session_state.history_df)
+    st.warning("履歴を削除しました。CSVも更新しました。")
 
 # =====================
 # 履歴表示
 # =====================
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("計算履歴")
+if not st.session_state.history_df.empty:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("計算履歴")
 
-if st.session_state.history:
-    df = pd.DataFrame(st.session_state.history)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(
+        st.session_state.history_df,
+        use_container_width=True,
+        hide_index=True
+    )
 
-    csv_data = df.to_csv(index=False).encode("utf-8-sig")
+    csv_data = st.session_state.history_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
     st.download_button(
         label="履歴をCSVでダウンロード",
         data=csv_data,
@@ -174,10 +201,10 @@ if st.session_state.history:
         mime="text/csv",
         use_container_width=True
     )
+
+    st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.info("まだ履歴はありません。")
-
-st.markdown('</div>', unsafe_allow_html=True)
 
 # =====================
 # 式

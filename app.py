@@ -147,7 +147,7 @@ if calc_clicked:
     except Exception:
         st.error("入力値を確認してください。")
 
-# =====================
+# ====================
 # 履歴削除
 # =====================
 if clear_clicked:

@@ -90,7 +90,7 @@ margin-top:5px;
 
 <div style="text-align:left;">
 <h1 style="margin:0;">含ちゃん</h1>
-<p style="margin:0; color:gray;">土の含水比計算アプリ</p>
+
 </div>
 
 </div>

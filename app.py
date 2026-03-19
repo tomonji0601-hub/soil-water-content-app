@@ -71,7 +71,7 @@ def get_now_jst():
 # =====================
 # タイトル
 # =====================
-st.markdown("<h1 style='text-align: center;'>🌱 土の含水比計算</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🌱 含ちゃん</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>試料名・測定日時付きで履歴保存できます</p>", unsafe_allow_html=True)
 
 # =====================

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 # ページ設定
 # =====================
 st.set_page_config(
-    page_title="土の含水比計算",
+    page_title="含ちゃん",
     page_icon="🧪",
     layout="centered"
 )
@@ -71,8 +71,7 @@ def calc_water_content(ma: float, mb: float, mc: float):
 # =====================
 # タイトル
 # =====================
-st.markdown("<h1 style='text-align: center;'>🌱 土の含水比計算</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>シンプル版</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🌱 含ちゃん</h1>", unsafe_allow_html=True)
 
 # =====================
 # 入力

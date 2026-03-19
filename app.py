@@ -71,13 +71,30 @@ def calc_water_content(ma: float, mb: float, mc: float):
 # =====================
 # タイトル
 # =====================
-col1, col2 = st.columns([1, 4])
+st.markdown("""
+<div style="
+display:flex;
+align-items:center;
+justify-content:center;
+gap:20px;
+margin-bottom:20px;
+">
 
-with col1:
-    st.image("icon.png", width=60)
+<img src="https://raw.githubusercontent.com/tomonji0601-hub/soil-water-content-app/main/icon.png"
+style="
+height:70px;
+width:auto;
+object-fit:contain;
+margin-top:5px;
+">
 
-with col2:
-    st.markdown("<h1 style='margin-bottom:0;'>含ちゃん</h1>", unsafe_allow_html=True)
+<div style="text-align:left;">
+<h1 style="margin:0;">含ちゃん</h1>
+<p style="margin:0; color:gray;">土の含水比計算アプリ</p>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
 
 # =====================
 # 入力

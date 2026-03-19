@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 # ページ設定
 # =====================
 st.set_page_config(
-    page_title="土の含水比計算",
+    page_title="含ちゃん",
     page_icon="🧪",
     layout="centered"
 )
